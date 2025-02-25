@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Guessing Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title" data-en="Word Guessing Game" data-es="Juego de Adivinar Palabras">Word Guessing Game</h1>
+        
+        <!-- Initial Setup Screen -->
+        <div id="setup-screen">
+            <div class="setup-container">
+                <div class="card">
+                    <h2 class="card-title" data-en="Create New Game" data-es="Crear Nuevo Juego">Create New Game</h2>
+                    <div class="form-group">
+                        <label for="api-key" data-en="OpenRouter API Key:" data-es="Clave API de OpenRouter:">OpenRouter API Key:</label>
+                        <input type="password" id="api-key" placeholder="sk-or-..." />
+                        <p class="api-info" data-en="Get a key at openrouter.ai" data-es="Obtén una clave en openrouter.ai">Get a key at <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="host-name" data-en="Your Name:" data-es="Tu Nombre:">Your Name:</label>
+                        <input type="text" id="host-name" placeholder="Enter your name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="create-room-id" data-en="Room ID:" data-es="ID de Sala:">Room ID:</label>
+                        <div class="input-with-button">
+                            <input type="text" id="create-room-id" placeholder="Enter a unique room ID" />
+                            <button id="generate-room-id" data-en="Generate" data-es="Generar">Generate</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="game-mode" data-en="Game Mode:" data-es="Modo de Juego:">Game Mode:</label>
+                        <select id="game-mode">
+                            <option value="words" data-en="Words" data-es="Palabras">Words</option>
+                            <option value="idioms" data-en="Idioms & Proverbs" data-es="Refranes & Dichos">Idioms & Proverbs</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="lives" data-en="Initial Lives:" data-es="Vidas Iniciales:">Initial Lives:</label>
+                        <input type="number" id="lives" min="1" max="10" value="5" />
+                    </div>
+                    <div class="form-group">
+                        <label for="create-language" data-en="Language:" data-es="Idioma:">Language:</label>
+                        <select id="create-language">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+                    <button id="create-game-btn" data-en="Create Game" data-es="Crear Juego">Create Game</button>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title" data-en="Join Existing Game" data-es="Unirse a un Juego">Join Existing Game</h2>
+                    <div class="form-group">
+                        <label for="join-room-id" data-en="Room ID:" data-es="ID de Sala:">Room ID:</label>
+                        <input type="text" id="join-room-id" placeholder="Enter room ID to join" />
+                    </div>
+                    <div class="form-group">
+                        <label for="player-name" data-en="Your Name:" data-es="Tu Nombre:">Your Name:</label>
+                        <input type="text" id="player-name" placeholder="Enter your name" />
+                    </div>
+                    <button id="join-game-btn" data-en="Join Game" data-es="Unirse al Juego">Join Game</button>
+                </div>
+            </div>
+            
+            <div class="language-selector">
+                <button id="language-en" class="active">English</button>
+                <button id="language-es">Español</button>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <div class="game-header">
+                <div class="room-info">
+                    <span data-en="Room:" data-es="Sala:">Room:</span> <span id="display-room-id"></span>
+                    <span class="game-mode-display">
+                        (<span id="current-game-mode" data-en-words="Words" data-es-words="Palabras" 
+                                data-en-idioms="Idioms & Proverbs" data-es-idioms="Refranes & Dichos">Words</span>)
+                    </span>
+                </div>
+                <div class="language-controls">
+                    <button id="change-language-btn" data-en="Change Language" data-es="Cambiar Idioma">Change Language</button>
+                    <select id="game-language">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="game-status">
+                <h2 id="game-state" data-en="Waiting for players..." data-es="Esperando a los jugadores...">Waiting for players...</h2>
+                <div class="game-buttons">
+                    <button id="start-game-btn" data-en="Start Game" data-es="Iniciar Juego">Start Game</button>
+                    <button id="play-again-btn" class="hidden" data-en="Play Again" data-es="Jugar de Nuevo">Play Again</button>
+                    <button id="switch-mode-btn" class="hidden" data-en="Switch Game Mode" data-es="Cambiar Modo de Juego">Switch Game Mode</button>
+                </div>
+            </div>
+            
+            <div class="word-display">
+                <div id="word-container"></div>
+            </div>
+            
+            <div class="game-controls">
+                <div class="guess-container">
+                    <input type="text" id="guess-input" placeholder="Letter or word" maxlength="100" disabled />
+                    <button id="guess-btn" disabled data-en="Guess" data-es="Adivinar">Guess</button>
+                </div>
+                <button id="hint-btn" disabled data-en="Request Hint" data-es="Pedir Pista">Request Hint</button>
+            </div>
+            
+            <div class="hints-container">
+                <h3 data-en="Hints:" data-es="Pistas:">Hints:</h3>
+                <ul id="hints-list"></ul>
+            </div>
+            
+            <div class="guesses-container">
+                <div class="guessed-letters">
+                    <h3 data-en="Guessed Letters:" data-es="Letras Adivinadas:">Guessed Letters:</h3>
+                    <div id="guessed-letters-list"></div>
+                </div>
+                <div class="guessed-words">
+                    <h3 data-en="Guessed Words/Phrases:" data-es="Palabras/Frases Adivinadas:">Guessed Words/Phrases:</h3>
+                    <ul id="guessed-words-list"></ul>
+                </div>
+            </div>
+            
+            <div class="players-container">
+                <h3 data-en="Players:" data-es="Jugadores:">Players:</h3>
+                <ul id="players-list"></ul>
+            </div>
+            
+            <div class="messages-container">
+                <h3 data-en="Messages:" data-es="Mensajes:">Messages:</h3>
+                <div id="messages-list"></div>
+            </div>
+            
+            <button id="leave-game-btn" data-en="Leave Game" data-es="Salir del Juego">Leave Game</button>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
